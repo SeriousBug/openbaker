@@ -2,9 +2,14 @@ import { Button, StyleSheet } from "react-native";
 
 import EditScreenInfo from "../../components/EditScreenInfo";
 import { Text, View } from "../../components/Themed";
-import { migrateUp } from "../../lib/db/migration";
+import { migrateDown, migrateUp } from "../../lib/db/migration";
+import { useStarters } from "../../lib/data/starters";
 
 export default function TabOneScreen() {
+  const { starters, addStarter, error, revalidate, mutate } = useStarters();
+
+  console.log("starters", starters, error);
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Tab One</Text>
@@ -13,6 +18,7 @@ export default function TabOneScreen() {
         lightColor="#eee"
         darkColor="rgba(255,255,255,0.1)"
       />
+      <Text>{JSON.stringify(starters)}</Text>
       <EditScreenInfo path="app/(tabs)/index.tsx" />
       <Button
         title="Migrate to latest"
@@ -23,7 +29,19 @@ export default function TabOneScreen() {
       <Button
         title="Migrate down"
         onPress={() => {
-          migrateUp();
+          migrateDown();
+        }}
+      />
+      <Button
+        title="Revalidate"
+        onPress={() => {
+          mutate();
+        }}
+      />
+      <Button
+        title="Add"
+        onPress={() => {
+          addStarter("foo");
         }}
       />
     </View>
@@ -33,6 +51,7 @@ export default function TabOneScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    gap: 8,
     alignItems: "center",
     justifyContent: "center",
   },

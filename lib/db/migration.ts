@@ -3,6 +3,8 @@ import { DB, IDB, isResultSetError, sql } from "./db";
 const VERSION_KEY = "version";
 
 async function getVersion(tx: IDB) {
+  // We just always try to create the table to simplify the following logic.
+  // With the `IF NOT EXISTS`, this is always going to succeed.
   await tx.write(
     sql`CREATE TABLE IF NOT EXISTS meta(key TEXT PRIMARY KEY, value TEXT)`,
   );
@@ -34,6 +36,7 @@ export function migrateUp() {
         sql`UPDATE meta SET value = ${version} WHERE key = ${VERSION_KEY}`,
       );
     }
+    console.log("now version", await getVersion(tx));
   });
 }
 
@@ -44,10 +47,16 @@ export function migrateDown() {
 
     if (version === 0) {
       console.log("already at version 0");
+      return;
     }
 
     const lastMigration = MIGRATIONS[version - 1];
     await lastMigration.down(tx);
+    await tx.write(
+      sql`UPDATE meta SET value = ${version - 1} WHERE key = ${VERSION_KEY}`,
+    );
+
+    console.log("now version", await getVersion(tx));
   });
 }
 
@@ -60,10 +69,12 @@ type Migration = {
 const MIGRATIONS: Migration[] = [
   {
     up: async (tx) => {
-      await tx.write(sql`CREATE TABLE (key, value) VALUES(${VERSION_KEY}, 1)`);
+      await tx.write(
+        sql`CREATE TABLE starters(id TEXT PRIMARY KEY, name TEXT, schedule TEXT, lastFed TEXT)`,
+      );
     },
     down: async (tx) => {
-      await tx.write(sql`DELETE FROM meta WHERE key = ${VERSION_KEY}`);
+      await tx.write(sql`DROP TABLE IF EXISTS starters`);
     },
   },
 ];

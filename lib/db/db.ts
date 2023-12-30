@@ -54,12 +54,12 @@ async function connection() {
 export const DB: IDBTx = {
   async read(query) {
     const db = await connection();
-    const results = await db.execAsync([query], false);
+    const results = await db.execAsync([query], true);
     return results[0];
   },
   async write(query) {
     const db = await connection();
-    const results = await db.execAsync([query], true);
+    const results = await db.execAsync([query], false);
     return results[0];
   },
   async transaction(cb) {

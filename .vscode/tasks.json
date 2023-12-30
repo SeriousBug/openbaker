@@ -1,0 +1,12 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "npm",
+      "script": "start:go",
+      "problemMatcher": [],
+      "label": "Start Expo Go",
+      "detail": "expo start --go"
+    }
+  ]
+}
