@@ -15,7 +15,13 @@ export default function TabOneScreen() {
       />
       <EditScreenInfo path="app/(tabs)/index.tsx" />
       <Button
-        title="Migrate"
+        title="Migrate to latest"
+        onPress={() => {
+          migrateUp();
+        }}
+      />
+      <Button
+        title="Migrate down"
         onPress={() => {
           migrateUp();
         }}

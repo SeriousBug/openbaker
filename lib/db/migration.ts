@@ -2,26 +2,29 @@ import { DB, IDB, isResultSetError, sql } from "./db";
 
 const VERSION_KEY = "version";
 
+async function getVersion(tx: IDB) {
+  await tx.write(
+    sql`CREATE TABLE IF NOT EXISTS meta(key TEXT PRIMARY KEY, value TEXT)`,
+  );
+  const versionResult = await tx.write(
+    sql`SELECT value FROM meta WHERE key = ${VERSION_KEY}`,
+  );
+  if (isResultSetError(versionResult)) {
+    console.error(versionResult.error);
+    throw versionResult.error;
+  }
+
+  const version = parseInt(
+    versionResult.rows.length === 0 ? 0 : versionResult.rows[0].value,
+    10,
+  );
+  return version;
+}
+
 export function migrateUp() {
   return DB.transaction(async (tx) => {
-    await tx.write(
-      sql`CREATE TABLE IF NOT EXISTS meta(key TEXT PRIMARY KEY, value TEXT)`,
-    );
-    const versionResult = await tx.write(
-      sql`SELECT value FROM meta WHERE key = ${VERSION_KEY}`,
-    );
-    if (isResultSetError(versionResult)) {
-      console.error(versionResult.error);
-      throw versionResult.error;
-    }
-
-    console.log(versionResult);
-    console.log("length", versionResult.rows.length);
-    const version = parseInt(
-      versionResult.rows.length === 0 ? 0 : versionResult.rows[0].value,
-      10,
-    );
-    console.log("version", version);
+    const version = await getVersion(tx);
+    console.log("current version", version);
 
     const migrations = MIGRATIONS.slice(version);
     console.log("migrations to do", migrations.length);
@@ -34,6 +37,20 @@ export function migrateUp() {
   });
 }
 
+export function migrateDown() {
+  return DB.transaction(async (tx) => {
+    const version = await getVersion(tx);
+    console.log("current version", version);
+
+    if (version === 0) {
+      console.log("already at version 0");
+    }
+
+    const lastMigration = MIGRATIONS[version - 1];
+    await lastMigration.down(tx);
+  });
+}
+
 type Migration = {
   up: (tx: IDB) => Promise<void>;
   down: (tx: IDB) => Promise<void>;
@@ -43,9 +60,7 @@ type Migration = {
 const MIGRATIONS: Migration[] = [
   {
     up: async (tx) => {
-      await tx.write(
-        sql`INSERT INTO meta(key, value) VALUES(${VERSION_KEY}, 1)`,
-      );
+      await tx.write(sql`CREATE TABLE (key, value) VALUES(${VERSION_KEY}, 1)`);
     },
     down: async (tx) => {
       await tx.write(sql`DELETE FROM meta WHERE key = ${VERSION_KEY}`);
