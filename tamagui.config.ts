@@ -29,7 +29,7 @@ const animations = createAnimations({
 const appConfig = createTamagui({
   themes,
   defaultTheme: "light",
-  shouldAddPrefersColorThemes: false,
+  shouldAddPrefersColorThemes: true,
   themeClassNameOnRoot: false,
   tokens,
   shorthands,

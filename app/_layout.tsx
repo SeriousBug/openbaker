@@ -1,15 +1,15 @@
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import {
-  DarkTheme,
-  DefaultTheme,
-  ThemeProvider,
+  DarkTheme as NavDarkTheme,
+  DefaultTheme as NavDefaultTheme,
+  ThemeProvider as NavThemeProvider,
 } from "@react-navigation/native";
 import { useFonts } from "expo-font";
 import { SplashScreen, Stack } from "expo-router";
 import { useEffect } from "react";
 import { AppState, useColorScheme } from "react-native";
 import { SWRConfig } from "swr";
-import { TamaguiProvider } from "tamagui";
+import { TamaguiProvider, Theme } from "tamagui";
 import config from "../tamagui.config";
 
 export {
@@ -49,16 +49,6 @@ export default function RootLayout() {
   }
 
   return (
-    <TamaguiProvider config={config}>
-      <RootLayoutNav />
-    </TamaguiProvider>
-  );
-}
-
-function RootLayoutNav() {
-  const colorScheme = useColorScheme();
-
-  return (
     <SWRConfig
       value={{
         revalidateIfStale: false,
@@ -94,12 +84,26 @@ function RootLayoutNav() {
         },
       }}
     >
-      <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+      <TamaguiProvider config={config}>
+        <RootLayoutNav />
+      </TamaguiProvider>
+    </SWRConfig>
+  );
+}
+
+function RootLayoutNav() {
+  const colorScheme = useColorScheme();
+
+  return (
+    <Theme name={colorScheme}>
+      <NavThemeProvider
+        value={colorScheme === "dark" ? NavDarkTheme : NavDefaultTheme}
+      >
         <Stack>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="modal" options={{ presentation: "modal" }} />
         </Stack>
-      </ThemeProvider>
-    </SWRConfig>
+      </NavThemeProvider>
+    </Theme>
   );
 }
