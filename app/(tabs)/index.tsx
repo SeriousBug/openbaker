@@ -3,11 +3,18 @@ import { useStarters, type Starter } from "../../lib/data/starters";
 
 function Starter({ starter }: { starter: Starter }) {
   return (
-    <Card elevate size={4} bordered>
+    <Card elevate size="$2" p="$4" bordered>
       <Card.Header>
         <H2>{starter.name}</H2>
       </Card.Header>
-      <Card.Footer />
+      <Text>
+        {starter.lastFed ? `Last fed ${starter.lastFed}` : "Never fed"}
+      </Text>
+      <Text>
+        {starter.schedule
+          ? `Next feeding ${starter.schedule}`
+          : "Unknown feeding schedule"}
+      </Text>
     </Card>
   );
 }
@@ -15,10 +22,8 @@ function Starter({ starter }: { starter: Starter }) {
 export default function TabOneScreen() {
   const { starters, addStarter, error, revalidate, mutate } = useStarters();
 
-  console.log("starters", starters, error);
-
   return (
-    <YStack space>
+    <YStack space m="$5">
       {(starters ?? []).map((starter) => (
         <Starter key={starter.id} starter={starter} />
       ))}
