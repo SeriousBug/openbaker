@@ -11,6 +11,7 @@ const starterSchema = z.object({
   schedule: z.string().nullable(),
 });
 const startersSchema = z.array(starterSchema);
+export type Starter = z.infer<typeof starterSchema>;
 
 export function useStarters() {
   const { data, error, mutate } = useSWR("starters", async () => {

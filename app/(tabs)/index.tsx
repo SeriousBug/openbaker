@@ -1,9 +1,16 @@
-import { Button, StyleSheet } from "react-native";
+import { Card, YStack, Text, H2 } from "tamagui";
+import { useStarters, type Starter } from "../../lib/data/starters";
 
-import EditScreenInfo from "../../components/EditScreenInfo";
-import { Text, View } from "../../components/Themed";
-import { migrateDown, migrateUp } from "../../lib/db/migration";
-import { useStarters } from "../../lib/data/starters";
+function Starter({ starter }: { starter: Starter }) {
+  return (
+    <Card elevate size={4} bordered>
+      <Card.Header>
+        <H2>{starter.name}</H2>
+      </Card.Header>
+      <Card.Footer />
+    </Card>
+  );
+}
 
 export default function TabOneScreen() {
   const { starters, addStarter, error, revalidate, mutate } = useStarters();
@@ -11,57 +18,10 @@ export default function TabOneScreen() {
   console.log("starters", starters, error);
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Tab One</Text>
-      <View
-        style={styles.separator}
-        lightColor="#eee"
-        darkColor="rgba(255,255,255,0.1)"
-      />
-      <Text>{JSON.stringify(starters)}</Text>
-      <EditScreenInfo path="app/(tabs)/index.tsx" />
-      <Button
-        title="Migrate to latest"
-        onPress={() => {
-          migrateUp();
-        }}
-      />
-      <Button
-        title="Migrate down"
-        onPress={() => {
-          migrateDown();
-        }}
-      />
-      <Button
-        title="Revalidate"
-        onPress={() => {
-          mutate();
-        }}
-      />
-      <Button
-        title="Add"
-        onPress={() => {
-          addStarter("foo");
-        }}
-      />
-    </View>
+    <YStack space>
+      {(starters ?? []).map((starter) => (
+        <Starter key={starter.id} starter={starter} />
+      ))}
+    </YStack>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    gap: 8,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: "bold",
-  },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: "80%",
-  },
-});
