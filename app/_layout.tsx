@@ -106,6 +106,7 @@ function RootLayoutNav() {
             name="starter/[id]/view"
             options={{ title: "Starter" }}
           />
+          <Stack.Screen name="starter/add" options={{ title: "Add Starter" }} />
         </Stack>
       </NavThemeProvider>
     </Theme>

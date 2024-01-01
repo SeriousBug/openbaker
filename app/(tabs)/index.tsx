@@ -33,9 +33,11 @@ export default function TabOneScreen() {
           <Starter key={starter.id} starter={starter} />
         ))}
       </YStack>
-      <Button maxWidth="$12" size={4}>
-        Add Another
-      </Button>
+      <Link href="/starter/add" asChild>
+        <Button maxWidth="$12" size={4}>
+          Add Another
+        </Button>
+      </Link>
     </YStack>
   );
 }
