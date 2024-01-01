@@ -36,6 +36,7 @@ const appConfig = createTamagui({
   fonts: {
     bodyFont,
     headingFont,
+    body: bodyFont,
     heading: headingFont,
   },
   animations,

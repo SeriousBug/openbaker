@@ -3,15 +3,9 @@ import { DB, isResultSetError, sql } from "../db/db";
 import { useCallback } from "react";
 import { ulid } from "../ulid";
 import { z } from "zod";
+import { starterSchema } from "./starter";
 
-const starterSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  lastFed: z.string().nullable(),
-  schedule: z.string().nullable(),
-});
 const startersSchema = z.array(starterSchema);
-export type Starter = z.infer<typeof starterSchema>;
 
 export function useStarters() {
   const { data, error, mutate } = useSWR("starters", async () => {
