@@ -33,7 +33,7 @@ export function migrateUp() {
     for (const [version, migration] of migrations.entries()) {
       await migration.up(tx);
       await tx.write(
-        sql`UPDATE meta SET value = ${version} WHERE key = ${VERSION_KEY}`,
+        sql`UPDATE meta SET value = ${version + 1} WHERE key = ${VERSION_KEY}`,
       );
     }
     console.log("now version", await getVersion(tx));
@@ -70,7 +70,7 @@ const MIGRATIONS: Migration[] = [
   {
     up: async (tx) => {
       await tx.write(
-        sql`CREATE TABLE starters(id TEXT PRIMARY KEY, name TEXT, schedule TEXT, lastFed TEXT)`,
+        sql`CREATE TABLE IF NOT EXISTS starters(id TEXT PRIMARY KEY, name TEXT, instructions TEXT, schedule TEXT, lastFed TEXT)`,
       );
     },
     down: async (tx) => {

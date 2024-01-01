@@ -1,12 +1,14 @@
 import { useFormikContext } from "formik";
-import { Input, InputProps, View, Label } from "tamagui";
+import { Input, InputProps, View, Label, Text } from "tamagui";
+import _ from "radash";
 
 export function FormInput({
   name,
   label,
   ...props
 }: InputProps & { name: string; label?: string }) {
-  const { handleChange, handleBlur, values } = useFormikContext();
+  const { handleChange, handleBlur, values, errors, touched } =
+    useFormikContext<Record<string, string>>();
 
   return (
     <View>
@@ -19,6 +21,9 @@ export function FormInput({
         value={values[name]}
         {...props}
       />
+      <Text>
+        {!_.isEmpty(errors[name]) && touched[name] ? errors[name] : ""}
+      </Text>
     </View>
   );
 }

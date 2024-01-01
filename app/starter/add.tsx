@@ -20,8 +20,11 @@ import { FormDateTimePicker } from "../../components/Form/FormDateTimePicker";
 import _ from "radash";
 import { RRule } from "rrule";
 import { z } from "zod";
+import { useAddStarter } from "../../lib/data/starters";
 
 export default function StarterAdd() {
+  const addStarter = useAddStarter();
+
   return (
     <Formik
       initialValues={{
@@ -63,7 +66,12 @@ export default function StarterAdd() {
           freq: RRule[values.durationUnit === "days" ? "DAILY" : "WEEKLY"],
           interval: Number.parseInt(values.durationAmount, 10),
         });
-        console.log(rrule.after(new Date()));
+        addStarter({
+          name: values.name,
+          instructions: values.instructions,
+          schedule: rrule.toString(),
+          lastFed: new Date(values.start).toString(),
+        });
       }}
     >
       <YStack space p="$4">
