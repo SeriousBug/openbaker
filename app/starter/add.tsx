@@ -4,42 +4,97 @@ import { useMemo } from "react";
 import {
   Adapt,
   Button,
-  H1,
-  Input,
+  Text,
   Label,
   Select,
   Sheet,
   XStack,
   YStack,
+  View,
 } from "tamagui";
 import { LinearGradient } from "tamagui/linear-gradient";
 import { FormInput } from "../../components/Form/FormInput";
 import { FormSubmitButton } from "../../components/Form/FormSubmitButton";
 import { FormSelect } from "../../components/Form/FormSelect";
+import { FormDateTimePicker } from "../../components/Form/FormDateTimePicker";
+import _ from "radash";
+import { RRule } from "rrule";
+import { z } from "zod";
 
 export default function StarterAdd() {
   return (
     <Formik
-      initialValues={{ name: "", instructions: "", period: "", duration: "" }}
+      initialValues={{
+        name: "",
+        instructions: "",
+        durationAmount: "",
+        durationUnit: "",
+        start: "",
+      }}
+      validate={(values) => {
+        const errors: Partial<Record<keyof typeof values, string | undefined>> =
+          {};
+        if (_.isEmpty(values.name)) {
+          errors.name = "Required";
+        }
+
+        if (_.isEmpty(values.durationAmount)) {
+          errors.durationAmount = "Required";
+        } else if (
+          !z.coerce.number().int().safeParse(values.durationAmount).success
+        ) {
+          errors.durationAmount = "Must be a whole number";
+        } else if (Number.parseInt(values.durationAmount, 10) < 1) {
+          errors.durationAmount = "Must be 1 or greater";
+        }
+
+        if (_.isEmpty(values.durationUnit)) {
+          errors.durationUnit = "Required";
+        }
+
+        if (_.isEmpty(values.start)) {
+          errors.start = "Required";
+        }
+        return errors;
+      }}
       onSubmit={(values) => {
-        console.log(values);
+        const rrule = new RRule({
+          dtstart: new Date(values.start),
+          freq: RRule[values.durationUnit === "days" ? "DAILY" : "WEEKLY"],
+          interval: Number.parseInt(values.durationAmount, 10),
+        });
+        console.log(rrule.after(new Date()));
       }}
     >
-      <YStack space>
-        <Label>Name</Label>
-        <FormInput name="name" placeholder="My First Starter" />
-        <Label>Feeding Instructions</Label>
+      <YStack space p="$4">
         <FormInput
+          label="Starter name"
+          name="name"
+          placeholder="My First Starter"
+        />
+        <FormInput
+          label="Feeding instructions"
           name="instructions"
           multiline
           placeholder="Discard 30g, add 15g whole wheat flour and ..."
         />
-        <Label>Feed Every</Label>
-        <XStack space>
-          <FormInput name="period" placeholder="2"></FormInput>
-          <FormSelect name="duration" values={["days", "weeks"]} />
-        </XStack>
-        <XStack space>
+        <View>
+          <Label>Schedule Start</Label>
+          <FormDateTimePicker name="start" />
+          <Text>The date you fed this starter last.</Text>
+        </View>
+        <View>
+          <Label>Feed Every</Label>
+          <XStack space>
+            <FormInput
+              name="durationAmount"
+              placeholder="2"
+              inputMode="numeric"
+            />
+            <FormSelect name="durationUnit" values={["days", "weeks"]} />
+          </XStack>
+        </View>
+        <XStack space justifyContent="flex-end" mt="$12">
           <Button>Cancel</Button>
           <FormSubmitButton>Add</FormSubmitButton>
         </XStack>

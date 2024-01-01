@@ -15,7 +15,7 @@ export function FormSelect({
 
   return (
     <Select disablePreventBodyScroll onValueChange={handleChange(name)}>
-      <Select.Trigger width={220} iconAfter={ChevronDown}>
+      <Select.Trigger iconAfter={ChevronDown} flexGrow={1} flexShrink={1}>
         <Select.Value />
       </Select.Trigger>
 
