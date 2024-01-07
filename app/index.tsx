@@ -1,9 +1,10 @@
-import { Card, YStack, Text, H2, Button } from "tamagui";
-import { useStarters } from "../../lib/data/starters";
-import type { Starter } from "../../lib/data/starter";
+import { Card, YStack, Text, H2, Button, View } from "tamagui";
+import { useStarters } from "../lib/data/starters";
+import type { Starter } from "../lib/data/starter";
 import { Link } from "expo-router";
 import { useMemo } from "react";
 import { RRule } from "rrule";
+import { RootContainer } from "../components/RootContainer";
 
 function Starter({ starter }: { starter: Starter }) {
   const lastFed = useMemo(() => {
@@ -34,21 +35,39 @@ function Starter({ starter }: { starter: Starter }) {
   );
 }
 
+function StarterList() {
+  const { starters } = useStarters();
+
+  if (!starters) {
+    // TODO: Loading state
+    return null;
+  }
+  if (starters.length === 0) {
+    <Text>No starters yet...</Text>;
+  }
+
+  return (
+    <YStack space>
+      {starters.map((starter) => (
+        <Starter key={starter.id} starter={starter} />
+      ))}
+    </YStack>
+  );
+}
+
 export default function TabOneScreen() {
   const { starters } = useStarters();
 
   return (
-    <YStack space p="$2">
-      <YStack space>
-        {(starters ?? []).map((starter) => (
-          <Starter key={starter.id} starter={starter} />
-        ))}
-      </YStack>
-      <Link href="/starter/add" asChild>
-        <Button maxWidth="$12" size={4}>
-          Add Another
-        </Button>
-      </Link>
-    </YStack>
+    <RootContainer hasTitle space>
+      <StarterList />
+      <View alignItems="flex-end">
+        <Link href="/starter/add" asChild>
+          <Button size="$4">
+            {starters?.length === 0 ? "Add your first starter" : "Add starter"}
+          </Button>
+        </Link>
+      </View>
+    </RootContainer>
   );
 }

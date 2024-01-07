@@ -1,8 +1,9 @@
-import useSWR from "swr";
+import useSWR, { useSWRConfig } from "swr";
 import { DB, isResultSetError, sql } from "../db/db";
 import { useCallback } from "react";
 import { z } from "zod";
 import { keys } from "./keys";
+import SQL from "@nearform/sql";
 
 export const starterSchema = z.object({
   id: z.string(),
@@ -36,3 +37,29 @@ export function useStarter({ id }: { id: string }) {
     mutate,
   };
 }
+
+export function useDeleteStarter() {
+  const { mutate } = useSWRConfig();
+  return useCallback(
+    async (id: string) => {
+      console.log("deleting", id);
+      await DB.write(sql`DELETE FROM starters WHERE id = ${id}`);
+      await Promise.all([mutate(keys.starters), mutate(keys.starter(id))]);
+    },
+    [mutate],
+  );
+}
+
+// export function useUpdateStarter() {
+//   const { mutate } = useSWRConfig();
+//   return useCallback(
+//     async (id: string, starter: Partial<Starter>) => {
+//       const updateStatement = sql``
+//       await DB.write(
+//         sql`UPDATE starters SET ${sql(starter)} WHERE id = ${id} RETURNING *`,
+//       );
+//       await Promise.all([mutate(keys.starters), mutate(keys.starter(id))]);
+//     },
+//     [mutate],
+//   );
+// }
