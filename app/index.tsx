@@ -3,23 +3,18 @@ import { useStarters } from "../lib/data/starters";
 import type { Starter } from "../lib/data/starter";
 import { Link } from "expo-router";
 import { useMemo } from "react";
-import { RRule } from "rrule";
 import { RootContainer } from "../components/RootContainer";
+import { getFormattedNextFeeding } from "../lib/time";
+import { Loading } from "../components/Loading";
 
 function Starter({ starter }: { starter: Starter }) {
   const lastFed = useMemo(() => {
     if (!starter.lastFed) return undefined;
-    return new Date(starter.lastFed).toLocaleString();
+    return new Date(starter.lastFed).toLocaleDateString();
   }, [starter.lastFed]);
 
-  const nextFeeding = useMemo(() => {
-    if (!starter.schedule) return undefined;
-    const rrule = RRule.fromString(starter.schedule);
-    const next = rrule.after(
-      starter.lastFed ? new Date(starter.lastFed) : new Date(),
-    );
-    if (!next) return undefined;
-    return next.toLocaleString();
+  const nextFeed = useMemo(() => {
+    return getFormattedNextFeeding(starter);
   }, [starter.schedule, starter.lastFed]);
 
   return (
@@ -29,7 +24,7 @@ function Starter({ starter }: { starter: Starter }) {
           <H2>{starter.name}</H2>
         </Card.Header>
         <Text>{lastFed ? `Last fed ${lastFed}` : "Never fed"}</Text>
-        <Text>{nextFeeding ? `Next feeding ${nextFeeding}` : null}</Text>
+        <Text>{nextFeed ? `Next feeding ${nextFeed}` : null}</Text>
       </Card>
     </Link>
   );
@@ -39,8 +34,7 @@ function StarterList() {
   const { starters } = useStarters();
 
   if (!starters) {
-    // TODO: Loading state
-    return null;
+    return <Loading />;
   }
   if (starters.length === 0) {
     <Text>No starters yet...</Text>;
@@ -55,18 +49,32 @@ function StarterList() {
   );
 }
 
-export default function TabOneScreen() {
+export function AddStarterButton() {
   const { starters } = useStarters();
 
+  if (starters === undefined) {
+    return <Loading />;
+  }
+  let contents: string;
+  if (starters.length === 0) {
+    contents = "Add your first starter";
+  } else {
+    contents = "Add starter";
+  }
+
+  return (
+    <Link href="/starter/add" asChild>
+      <Button size="$4">{contents}</Button>
+    </Link>
+  );
+}
+
+export default function TabOneScreen() {
   return (
     <RootContainer hasTitle space>
       <StarterList />
       <View alignItems="flex-end">
-        <Link href="/starter/add" asChild>
-          <Button size="$4">
-            {starters?.length === 0 ? "Add your first starter" : "Add starter"}
-          </Button>
-        </Link>
+        <AddStarterButton />
       </View>
     </RootContainer>
   );

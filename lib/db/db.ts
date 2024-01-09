@@ -58,6 +58,7 @@ export const DB: IDBTx = {
     return results[0];
   },
   async write(query) {
+    console.log(query);
     const db = await connection();
     const results = await db.execAsync([query], false);
     return results[0];

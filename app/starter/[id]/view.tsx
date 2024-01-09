@@ -1,5 +1,9 @@
 import { useLocalSearchParams } from "expo-router";
-import { useDeleteStarter, useStarter } from "../../../lib/data/starter";
+import {
+  useDeleteStarter,
+  useFeedStarter,
+  useStarter,
+} from "../../../lib/data/starter";
 import {
   AlertDialog,
   Button,
@@ -8,88 +12,63 @@ import {
   Heading,
   XStack,
   YStack,
+  View,
 } from "tamagui";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
+import { Loading } from "../../../components/Loading";
+import { getFormattedNextFeeding } from "../../../lib/time";
+import { ConfirmDialogButton } from "../../../components/ConfirmDialogButton";
 
 export default function StarterView() {
   const id = useLocalSearchParams().id as string;
   const { starter } = useStarter({ id });
   const deleteStarter = useDeleteStarter();
+  const feedStarter = useFeedStarter();
 
   const onDelete = useCallback(() => {
     deleteStarter(id);
   }, [deleteStarter]);
+  const onFeed = useCallback(() => {
+    feedStarter({ id, newFeeding: new Date().toISOString() });
+  }, [starter]);
 
-  if (!starter) return <Text>Loading...</Text>;
+  const nextFeed = useMemo(() => {
+    return getFormattedNextFeeding(starter);
+  }, [starter]);
+  const lastFed = useMemo(() => {
+    if (!starter?.lastFed) return undefined;
+    return new Date(starter.lastFed).toLocaleDateString();
+  }, [starter]);
+
+  if (!starter) return <Loading />;
 
   return (
     <YStack space p="$4">
       <Heading>{starter.name}</Heading>
+      <View mb="$4">
+        <Text>{lastFed ? `Last fed ${lastFed}` : "Never fed"}</Text>
+        <Text>{nextFeed ? `Next feeding ${nextFeed}` : null}</Text>
+      </View>
       <YStack space alignItems="center">
-        <Button maxWidth="$12">Feed</Button>
-        <DeleteButton maxWidth="$12" onDelete={onDelete} />
+        <ConfirmDialogButton
+          maxWidth="$12"
+          onConfirm={onFeed}
+          triggerLabel="Feed"
+          title={`Feed ${starter.name}`}
+          description="Feeding your starter?"
+          acceptLabel="Fed!"
+          cancelLabel="Not yet"
+        />
+        <ConfirmDialogButton
+          maxWidth="$12"
+          onConfirm={onDelete}
+          triggerLabel="Dump"
+          title={`Delete ${starter.name}`}
+          description="The starter will be permanently deleted. This can't be reversed. Are you sure?"
+          acceptLabel="Delete"
+          cancelLabel="Keep"
+        />
       </YStack>
     </YStack>
-  );
-}
-
-function DeleteButton({
-  onDelete,
-  ...props
-}: { onDelete: () => void } & ButtonProps) {
-  return (
-    <AlertDialog native>
-      <AlertDialog.Trigger asChild>
-        <Button {...props}>Dump</Button>
-      </AlertDialog.Trigger>
-
-      <AlertDialog.Portal>
-        <AlertDialog.Overlay
-          key="overlay"
-          animation="medium"
-          opacity={0.5}
-          enterStyle={{ opacity: 0 }}
-          exitStyle={{ opacity: 0 }}
-        />
-        <AlertDialog.Content
-          bordered
-          elevate
-          key="content"
-          animation={[
-            "medium",
-            {
-              opacity: {
-                overshootClamping: true,
-              },
-            },
-          ]}
-          enterStyle={{ x: 0, y: -20, opacity: 0, scale: 0.9 }}
-          exitStyle={{ x: 0, y: 10, opacity: 0, scale: 0.95 }}
-          x={0}
-          scale={1}
-          opacity={1}
-          y={0}
-        >
-          <YStack space>
-            <AlertDialog.Title>Remove Starter</AlertDialog.Title>
-            <AlertDialog.Description>
-              The starter will be permanently deleted. This can't be reversed.
-              Are you sure?
-            </AlertDialog.Description>
-
-            <XStack space="$3" justifyContent="flex-end">
-              <AlertDialog.Cancel asChild>
-                <Button>Cancel</Button>
-              </AlertDialog.Cancel>
-              <AlertDialog.Action asChild>
-                <Button onPress={onDelete} theme="active">
-                  Accept
-                </Button>
-              </AlertDialog.Action>
-            </XStack>
-          </YStack>
-        </AlertDialog.Content>
-      </AlertDialog.Portal>
-    </AlertDialog>
   );
 }

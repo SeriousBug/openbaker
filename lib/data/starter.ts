@@ -42,8 +42,20 @@ export function useDeleteStarter() {
   const { mutate } = useSWRConfig();
   return useCallback(
     async (id: string) => {
-      console.log("deleting", id);
       await DB.write(sql`DELETE FROM starters WHERE id = ${id}`);
+      await Promise.all([mutate(keys.starters), mutate(keys.starter(id))]);
+    },
+    [mutate],
+  );
+}
+
+export function useFeedStarter() {
+  const { mutate } = useSWRConfig();
+  return useCallback(
+    async ({ id, newFeeding }: { id: string; newFeeding: string }) => {
+      await DB.write(
+        sql`UPDATE starters SET lastFed = ${newFeeding} WHERE id = ${id}`,
+      );
       await Promise.all([mutate(keys.starters), mutate(keys.starter(id))]);
     },
     [mutate],
