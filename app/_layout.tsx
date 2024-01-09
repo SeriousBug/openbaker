@@ -6,11 +6,13 @@ import {
 } from "@react-navigation/native";
 import { useFonts } from "expo-font";
 import { SplashScreen, Stack } from "expo-router";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { AppState, useColorScheme } from "react-native";
 import { SWRConfig } from "swr";
 import { TamaguiProvider, Theme } from "tamagui";
 import config from "../tamagui.config";
+import * as Notifications from "expo-notifications";
+import { rescheduleAllNotifications } from "../lib/notification";
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -20,6 +22,14 @@ export {
 export const unstable_settings = {
   initialRouteName: "index",
 };
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: true,
+  }),
+});
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -42,6 +52,13 @@ export default function RootLayout() {
       SplashScreen.hideAsync();
     }
   }, [loaded]);
+
+  const notificationsSetUp = useRef(false);
+  useEffect(() => {
+    if (notificationsSetUp.current) return;
+    notificationsSetUp.current = true;
+    rescheduleAllNotifications();
+  }, []);
 
   if (!loaded) {
     return null;

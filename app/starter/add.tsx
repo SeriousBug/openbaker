@@ -20,7 +20,7 @@ import { FormDateTimePicker } from "../../components/Form/FormDateTimePicker";
 import _ from "radash";
 import { RRule } from "rrule";
 import { z } from "zod";
-import { useAddStarter } from "../../lib/data/starters";
+import { useAddStarter } from "../../lib/data/starter";
 
 export default function StarterAdd() {
   const addStarter = useAddStarter();

@@ -18,6 +18,7 @@ import { useCallback, useMemo } from "react";
 import { Loading } from "../../../components/Loading";
 import { getFormattedNextFeeding } from "../../../lib/time";
 import { ConfirmDialogButton } from "../../../components/ConfirmDialogButton";
+import * as Notifications from "expo-notifications";
 
 export default function StarterView() {
   const id = useLocalSearchParams().id as string;
@@ -50,6 +51,22 @@ export default function StarterView() {
         <Text>{nextFeed ? `Next feeding ${nextFeed}` : null}</Text>
       </View>
       <YStack space alignItems="center">
+        <Button
+          onPress={() => {
+            const l = Notifications.scheduleNotificationAsync({
+              content: {
+                title: "You've got mail! 📬",
+                body: "Here is the notification body",
+                data: { data: "goes here" },
+              },
+              trigger: { seconds: 2 },
+            });
+            console.log("Sending notification");
+            l.then((x) => console.log(x));
+          }}
+        >
+          Send Notification
+        </Button>
         <ConfirmDialogButton
           maxWidth="$12"
           onConfirm={onFeed}
