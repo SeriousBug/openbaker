@@ -13,6 +13,8 @@ import { TamaguiProvider, Theme } from "tamagui";
 import config from "../tamagui.config";
 import * as Notifications from "expo-notifications";
 import { rescheduleAllNotifications } from "../lib/notification";
+import { DB } from "../lib/db/db";
+import { migrateUp } from "../lib/db/migration";
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -47,10 +49,22 @@ export default function RootLayout() {
     if (error) throw error;
   }, [error]);
 
+  const initialized = useRef(false);
   useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
-    }
+    console.log("openbaker loaded data? ", loaded);
+    if (initialized.current || !loaded) return;
+
+    initialized.current = true;
+    migrateUp()
+      .then(() => {
+        console.log("Migrated up");
+      })
+      .catch((err) => {
+        console.error("Failed to migrate up", err);
+      })
+      .finally(() => {
+        SplashScreen.hideAsync();
+      });
   }, [loaded]);
 
   const notificationsSetUp = useRef(false);
