@@ -16,7 +16,8 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "net.bgenc.openbaker"
     },
     "android": {
       "adaptiveIcon": {

@@ -1,11 +1,11 @@
 import { Card, YStack, Text, H2, Button, View } from "tamagui";
 import { useStarters } from "../lib/data/starters";
-import type { Starter } from "../lib/data/starter";
 import { Link } from "expo-router";
 import { useMemo } from "react";
 import { RootContainer } from "../components/RootContainer";
 import { getFormattedNextFeeding } from "../lib/time";
 import { Loading } from "../components/Loading";
+import type { Starter } from "../lib/data/starterSchema";
 
 function Starter({ starter }: { starter: Starter }) {
   const lastFed = useMemo(() => {

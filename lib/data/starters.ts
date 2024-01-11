@@ -1,10 +1,9 @@
 import useSWR, { useSWRConfig } from "swr";
 import { DB, isResultSetError, sql } from "../db/db";
 import { useCallback } from "react";
-import { ulid } from "../ulid";
 import { z } from "zod";
-import { Starter, starterSchema } from "./starter";
 import { keys } from "./keys";
+import { starterSchema } from "./starterSchema";
 
 const startersSchema = z.array(starterSchema);
 

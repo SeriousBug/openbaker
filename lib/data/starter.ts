@@ -5,15 +5,7 @@ import { z } from "zod";
 import { keys } from "./keys";
 import { rescheduleAllNotifications } from "../notification";
 import { ulid } from "../ulid";
-
-export const starterSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  instructions: z.string().nullable(),
-  lastFed: z.string().nullable(),
-  schedule: z.string().nullable(),
-});
-export type Starter = z.infer<typeof starterSchema>;
+import { Starter, starterSchema } from "./starterSchema";
 
 export function useStarter({ id }: { id: string }) {
   const { data, error, mutate } = useSWR(keys.starter(id), async () => {

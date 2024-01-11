@@ -32,8 +32,9 @@ export function migrateUp() {
     console.log("migrations to do", migrations.length);
     for (const [version, migration] of migrations.entries()) {
       await migration.up(tx);
+      const newVersion = version + 1;
       await tx.write(
-        sql`UPDATE meta SET value = ${version + 1} WHERE key = ${VERSION_KEY}`,
+        sql`INSERT INTO meta(key, value) VALUES (${VERSION_KEY}, ${newVersion}) ON CONFLICT(key) DO UPDATE SET value = ${newVersion}`,
       );
     }
     console.log("now version", await getVersion(tx));

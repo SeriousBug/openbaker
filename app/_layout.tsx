@@ -6,15 +6,15 @@ import {
 } from "@react-navigation/native";
 import { useFonts } from "expo-font";
 import { SplashScreen, Stack } from "expo-router";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AppState, useColorScheme } from "react-native";
 import { SWRConfig } from "swr";
 import { TamaguiProvider, Theme } from "tamagui";
 import config from "../tamagui.config";
 import * as Notifications from "expo-notifications";
 import { rescheduleAllNotifications } from "../lib/notification";
-import { DB } from "../lib/db/db";
 import { migrateUp } from "../lib/db/migration";
+import "react-native-gesture-handler";
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -49,12 +49,11 @@ export default function RootLayout() {
     if (error) throw error;
   }, [error]);
 
-  const initialized = useRef(false);
+  const [initialized, setInitialized] = useState(false);
   useEffect(() => {
-    console.log("openbaker loaded data? ", loaded);
-    if (initialized.current || !loaded) return;
+    if (initialized || !loaded) return;
 
-    initialized.current = true;
+    setInitialized(true);
     migrateUp()
       .then(() => {
         console.log("Migrated up");
@@ -74,7 +73,7 @@ export default function RootLayout() {
     rescheduleAllNotifications();
   }, []);
 
-  if (!loaded) {
+  if (!loaded || !initialized) {
     return null;
   }
 
