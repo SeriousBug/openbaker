@@ -1,3 +1,4 @@
+import { Log } from "../log";
 import { DB, IDB, isResultSetError, sql } from "./db";
 
 const VERSION_KEY = "version";
@@ -20,44 +21,48 @@ async function getVersion(tx: IDB) {
     versionResult.rows.length === 0 ? 0 : versionResult.rows[0].value,
     10,
   );
+  Log.event("migration.version", { version });
   return version;
 }
 
 export function migrateUp() {
-  return DB.transaction(async (tx) => {
-    const version = await getVersion(tx);
-    console.log("current version", version);
+  return Log.span("migration.up", async () => {
+    return DB.transaction(async (tx) => {
+      const version = await getVersion(tx);
 
-    const migrations = MIGRATIONS.slice(version);
-    console.log("migrations to do", migrations.length);
-    for (const [version, migration] of migrations.entries()) {
-      await migration.up(tx);
-      const newVersion = version + 1;
-      await tx.write(
-        sql`INSERT INTO meta(key, value) VALUES (${VERSION_KEY}, ${newVersion}) ON CONFLICT(key) DO UPDATE SET value = ${newVersion}`,
-      );
-    }
-    console.log("now version", await getVersion(tx));
+      const migrations = MIGRATIONS.slice(version);
+      Log.event("migration.found migrations", {
+        migrations: migrations.length,
+      });
+      for (const [version, migration] of migrations.entries()) {
+        await migration.up(tx);
+        const newVersion = version + 1;
+        await tx.write(
+          sql`INSERT INTO meta(key, value) VALUES (${VERSION_KEY}, ${newVersion}) ON CONFLICT(key) DO UPDATE SET value = ${newVersion}`,
+        );
+        Log.event("migration.applied", { version: await getVersion(tx) });
+      }
+    });
   });
 }
 
 export function migrateDown() {
-  return DB.transaction(async (tx) => {
-    const version = await getVersion(tx);
-    console.log("current version", version);
+  return Log.span("migration.down", async () => {
+    return DB.transaction(async (tx) => {
+      const version = await getVersion(tx);
 
-    if (version === 0) {
-      console.log("already at version 0");
-      return;
-    }
+      if (version === 0) {
+        return;
+      }
 
-    const lastMigration = MIGRATIONS[version - 1];
-    await lastMigration.down(tx);
-    await tx.write(
-      sql`UPDATE meta SET value = ${version - 1} WHERE key = ${VERSION_KEY}`,
-    );
+      const lastMigration = MIGRATIONS[version - 1];
+      await lastMigration.down(tx);
+      await tx.write(
+        sql`UPDATE meta SET value = ${version - 1} WHERE key = ${VERSION_KEY}`,
+      );
 
-    console.log("now version", await getVersion(tx));
+      Log.event("migration.applied", { version: await getVersion(tx) });
+    });
   });
 }
 

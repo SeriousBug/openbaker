@@ -6,6 +6,7 @@ import {
   ResultSetError,
 } from "expo-sqlite";
 import SQL from "@nearform/sql";
+import { Log } from "../log";
 
 /** An injection-safe SQL query wrapper.
  *
@@ -53,27 +54,35 @@ async function connection() {
 
 export const DB: IDBTx = {
   async read(query) {
-    const db = await connection();
-    const results = await db.execAsync([query], true);
-    return results[0];
+    return Log.span("DB.read", async () => {
+      const db = await connection();
+      Log.event("DB.read.query", query);
+      const results = await db.execAsync([query], true);
+      return results[0];
+    });
   },
   async write(query) {
-    console.log(query);
-    const db = await connection();
-    const results = await db.execAsync([query], false);
-    return results[0];
+    return Log.span("DB.write", async () => {
+      const db = await connection();
+      Log.event("DB.write.query", query);
+      const results = await db.execAsync([query], false);
+      return results[0];
+    });
   },
   async transaction(cb) {
-    const db = await connection();
-    return db.transactionAsync((tx) => {
-      const wrappedExecute = (query: Query) => {
-        return tx.executeSqlAsync(query.sql, query.args as any[]);
-      };
-      const wrappedTx = {
-        read: wrappedExecute,
-        write: wrappedExecute,
-      };
-      return cb(wrappedTx);
+    return Log.span("DB.transaction", async () => {
+      const db = await connection();
+      return db.transactionAsync((tx) => {
+        const wrappedExecute = (query: Query) => {
+          Log.event("DB.transaction.query", query);
+          return tx.executeSqlAsync(query.sql, query.args as any[]);
+        };
+        const wrappedTx = {
+          read: wrappedExecute,
+          write: wrappedExecute,
+        };
+        return cb(wrappedTx);
+      });
     });
   },
 };

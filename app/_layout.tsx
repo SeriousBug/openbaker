@@ -15,6 +15,7 @@ import * as Notifications from "expo-notifications";
 import { rescheduleAllNotifications } from "../lib/notification";
 import { migrateUp } from "../lib/db/migration";
 import "react-native-gesture-handler";
+import { Log } from "../lib/log";
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -54,16 +55,10 @@ export default function RootLayout() {
     if (initialized || !loaded) return;
 
     setInitialized(true);
-    migrateUp()
-      .then(() => {
-        console.log("Migrated up");
-      })
-      .catch((err) => {
-        console.error("Failed to migrate up", err);
-      })
-      .finally(() => {
-        SplashScreen.hideAsync();
-      });
+    migrateUp().finally(() => {
+      Log.event("loading done");
+      SplashScreen.hideAsync();
+    });
   }, [loaded]);
 
   const notificationsSetUp = useRef(false);
