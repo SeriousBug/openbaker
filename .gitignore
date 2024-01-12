@@ -39,3 +39,7 @@ yarn-error.*
 
 expo-env.d.ts
 # @end expo-cli
+
+# Platform-specific files. These should, unless decided otherwise, should not be generated.
+android
+ios
