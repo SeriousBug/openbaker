@@ -1,6 +1,6 @@
 import { Check, ChevronDown, ChevronUp } from "@tamagui/lucide-icons";
 import { Formik, useFormik } from "formik";
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import {
   Adapt,
   Button,
@@ -110,7 +110,13 @@ export default function StarterAdd() {
             </XStack>
           </View>
           <XStack space justifyContent="flex-end" mt="$12">
-            <Button>Cancel</Button>
+            <Button
+              onPress={useCallback(() => {
+                router.canGoBack() ? router.back() : router.replace("/");
+              }, [])}
+            >
+              Cancel
+            </Button>
             <FormSubmitButton>Add</FormSubmitButton>
           </XStack>
         </YStack>
