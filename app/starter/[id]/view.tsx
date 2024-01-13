@@ -1,11 +1,11 @@
-import { useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import {
   useDeleteStarter,
   useFeedStarter,
   useStarter,
 } from "../../../lib/data/starter";
 import { Text, Heading, YStack, View } from "tamagui";
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Loading } from "../../../components/Loading";
 import { getFormattedNextFeeding } from "../../../lib/time";
 import { ConfirmDialogButton } from "../../../components/ConfirmDialogButton";
@@ -15,12 +15,24 @@ export default function StarterView() {
   const { starter } = useStarter({ id });
   const deleteStarter = useDeleteStarter();
   const feedStarter = useFeedStarter();
+  const [inProgress, setInProgress] = useState(false);
 
-  const onDelete = useCallback(() => {
-    deleteStarter(id);
+  const onDelete = useCallback(async () => {
+    setInProgress(true);
+    try {
+      await deleteStarter(id);
+      router.replace("/");
+    } finally {
+      setInProgress(false);
+    }
   }, [deleteStarter]);
-  const onFeed = useCallback(() => {
-    feedStarter({ id, newFeeding: new Date().toISOString() });
+  const onFeed = useCallback(async () => {
+    setInProgress(true);
+    try {
+      await feedStarter({ id, newFeeding: new Date().toISOString() });
+    } finally {
+      setInProgress(false);
+    }
   }, [starter]);
 
   const nextFeed = useMemo(() => {
@@ -42,6 +54,7 @@ export default function StarterView() {
       </View>
       <YStack space alignItems="center">
         <ConfirmDialogButton
+          disabled={inProgress}
           maxWidth="$12"
           onConfirm={onFeed}
           triggerLabel="Feed"
@@ -51,6 +64,7 @@ export default function StarterView() {
           cancelLabel="Not yet"
         />
         <ConfirmDialogButton
+          disabled={inProgress}
           maxWidth="$12"
           onConfirm={onDelete}
           triggerLabel="Dump"

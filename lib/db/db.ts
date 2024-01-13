@@ -56,7 +56,7 @@ export const DB: IDBTx = {
   async read(query) {
     return Log.span("DB.read", async () => {
       const db = await connection();
-      Log.event("DB.read.query", query);
+      Log.event("DB.read.query", { query: query.sql });
       const results = await db.execAsync([query], true);
       return results[0];
     });
@@ -64,7 +64,7 @@ export const DB: IDBTx = {
   async write(query) {
     return Log.span("DB.write", async () => {
       const db = await connection();
-      Log.event("DB.write.query", query);
+      Log.event("DB.write.query", { query: query.sql });
       const results = await db.execAsync([query], false);
       return results[0];
     });
@@ -74,7 +74,7 @@ export const DB: IDBTx = {
       const db = await connection();
       return db.transactionAsync((tx) => {
         const wrappedExecute = (query: Query) => {
-          Log.event("DB.transaction.query", query);
+          Log.event("DB.transaction.query", { query: query.sql });
           return tx.executeSqlAsync(query.sql, query.args as any[]);
         };
         const wrappedTx = {

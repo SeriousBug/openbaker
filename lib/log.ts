@@ -53,7 +53,10 @@ function logSpan<FN extends () => unknown>(
 
 function logEvent(
   name: string,
-  payload?: Record<string, string | number | boolean | null | undefined | Date>,
+  payload?: Record<
+    string,
+    string | number | boolean | null | undefined | Date | unknown
+  >,
 ) {
   console.log(JSON.stringify({ name, type: "event", payload }));
 }

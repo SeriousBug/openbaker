@@ -6,16 +6,19 @@ import { keys } from "./keys";
 import { rescheduleAllNotifications } from "../notification";
 import { ulid } from "../ulid";
 import { Starter, starterSchema } from "./starterSchema";
+import { Log } from "../log";
 
 export function useStarter({ id }: { id: string }) {
   const { data, error, mutate } = useSWR(keys.starter(id), async () => {
-    const res = await DB.read(
-      sql`SELECT * FROM starters WHERE id = ${id} LIMIT 1`,
-    );
-    if (isResultSetError(res)) {
-      throw res.error;
-    }
-    return starterSchema.parse(res.rows[0]);
+    return Log.span("useStarter", async () => {
+      const res = await DB.read(
+        sql`SELECT * FROM starters WHERE id = ${id} LIMIT 1`,
+      );
+      if (isResultSetError(res)) {
+        throw res.error;
+      }
+      return starterSchema.parse(res.rows[0]);
+    });
   });
 
   const revalidate = useCallback(async () => {

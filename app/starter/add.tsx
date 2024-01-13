@@ -1,5 +1,5 @@
 import { Check, ChevronDown, ChevronUp } from "@tamagui/lucide-icons";
-import { Formik } from "formik";
+import { Formik, useFormik } from "formik";
 import { useMemo } from "react";
 import {
   Adapt,
@@ -21,6 +21,8 @@ import _ from "radash";
 import { RRule } from "rrule";
 import { z } from "zod";
 import { useAddStarter } from "../../lib/data/starter";
+import { router } from "expo-router";
+import { Log } from "../../lib/log";
 
 export default function StarterAdd() {
   const addStarter = useAddStarter();
@@ -60,18 +62,20 @@ export default function StarterAdd() {
         }
         return errors;
       }}
-      onSubmit={(values) => {
+      onSubmit={async (values) => {
         const rrule = new RRule({
           dtstart: new Date(values.start),
           freq: RRule[values.durationUnit === "days" ? "DAILY" : "WEEKLY"],
           interval: Number.parseInt(values.durationAmount, 10),
         });
-        addStarter({
+        const { id } = await addStarter({
           name: values.name,
           instructions: values.instructions,
           schedule: rrule.toString(),
           lastFed: new Date(values.start).toString(),
         });
+        Log.event("starter added", { id });
+        router.replace(`/starter/${id}/view`);
       }}
     >
       <YStack space p="$4">
