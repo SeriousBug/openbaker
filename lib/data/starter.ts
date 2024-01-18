@@ -7,6 +7,7 @@ import { rescheduleAllNotifications } from "../notification";
 import { ulid } from "../ulid";
 import { Starter, starterSchema } from "./starterSchema";
 import { Log } from "../log";
+import SQL from "@nearform/sql";
 
 export function useStarter({ id }: { id: string }) {
   const { data, error, mutate } = useSWR(keys.starter(id), async () => {
@@ -78,16 +79,30 @@ export function useAddStarter() {
   );
 }
 
-// export function useUpdateStarter() {
-//   const { mutate } = useSWRConfig();
-//   return useCallback(
-//     async (id: string, starter: Partial<Starter>) => {
-//       const updateStatement = sql``
-//       await DB.write(
-//         sql`UPDATE starters SET ${sql(starter)} WHERE id = ${id} RETURNING *`,
-//       );
-//       await Promise.all([mutate(keys.starters), mutate(keys.starter(id))]);
-//     },
-//     [mutate],
-//   );
-// }
+export function useUpdateStarter() {
+  const { mutate } = useSWRConfig();
+  return useCallback(
+    async (id: string, starter: Partial<Starter>) => {
+      const expressions = [];
+      // Ew. Maybe I should look into a query builder library.
+      if (starter.name) {
+        expressions.push(sql`name = ${starter.name}`);
+      }
+      if (starter.instructions) {
+        expressions.push(sql`instructions = ${starter.instructions}`);
+      }
+      if (starter.schedule) {
+        expressions.push(sql`schedule = ${starter.schedule}`);
+      }
+      if (starter.lastFed) {
+        expressions.push(sql`lastFed = ${starter.lastFed}`);
+      }
+
+      await DB.write(
+        sql`UPDATE starters SET ${SQL.glue(expressions, ",")} WHERE id = ${id}`,
+      );
+      await Promise.all([mutate(keys.starters), mutate(keys.starter(id))]);
+    },
+    [mutate],
+  );
+}
