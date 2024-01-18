@@ -51,6 +51,9 @@ export default function StarterView() {
       <View mb="$4">
         <Text>{lastFed ? `Last fed ${lastFed}` : "Never fed"}</Text>
         <Text>{nextFeed ? `Next feeding ${nextFeed}` : null}</Text>
+        <Text mx={2} my={4}>
+          {starter.instructions}
+        </Text>
       </View>
       <YStack space alignItems="center">
         <ConfirmDialogButton
