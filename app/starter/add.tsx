@@ -1,17 +1,6 @@
-import { Check, ChevronDown, ChevronUp } from "@tamagui/lucide-icons";
-import { Formik, useFormik } from "formik";
+import { Formik } from "formik";
 import { useCallback, useMemo } from "react";
-import {
-  Adapt,
-  Button,
-  Text,
-  Label,
-  Select,
-  Sheet,
-  XStack,
-  YStack,
-  View,
-} from "tamagui";
+import { Button, Text, Label, XStack, YStack, View } from "tamagui";
 import { FormInput } from "../../components/Form/FormInput";
 import { FormSubmitButton } from "../../components/Form/FormSubmitButton";
 import { FormSelect } from "../../components/Form/FormSelect";
@@ -19,23 +8,36 @@ import { FormDateTimePicker } from "../../components/Form/FormDateTimePicker";
 import _ from "radash";
 import { RRule } from "rrule";
 import { z } from "zod";
-import { useAddStarter } from "../../lib/data/starter";
+import { useAddStarter, useUpdateStarter } from "../../lib/data/starter";
 import { router } from "expo-router";
 import { Log } from "../../lib/log";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+import { Starter } from "../../lib/data/starterSchema";
 
-export default function StarterAdd() {
+export default function StarterAdd({
+  initialStarter,
+}: {
+  initialStarter?: Starter;
+}) {
   const addStarter = useAddStarter();
+  const updateStarter = useUpdateStarter();
+
+  const [initialDurationAmount, initialDurationUnit] = useMemo(() => {
+    if (!initialStarter || !initialStarter.schedule) return ["", ""] as const;
+    const rrule = RRule.fromString(initialStarter.schedule);
+    const freq = rrule.options.freq === RRule.DAILY ? "days" : "weeks";
+    return [rrule.options.interval.toString(), freq] as const;
+  }, [initialStarter]);
 
   return (
     <KeyboardAwareScrollView>
       <Formik
         initialValues={{
-          name: "",
-          instructions: "",
-          durationAmount: "",
-          durationUnit: "",
-          start: "",
+          name: initialStarter?.name ?? "",
+          instructions: initialStarter?.instructions ?? "",
+          durationAmount: initialDurationAmount,
+          durationUnit: initialDurationUnit,
+          start: initialStarter?.lastFed ?? "",
         }}
         validate={(values) => {
           const errors: Partial<
@@ -70,14 +72,26 @@ export default function StarterAdd() {
             freq: RRule[values.durationUnit === "days" ? "DAILY" : "WEEKLY"],
             interval: Number.parseInt(values.durationAmount, 10),
           });
-          const { id } = await addStarter({
-            name: values.name,
-            instructions: values.instructions,
-            schedule: rrule.toString(),
-            lastFed: new Date(values.start).toString(),
-          });
-          Log.event("starter added", { id });
-          router.replace(`/starter/${id}/view`);
+          if (initialStarter) {
+            await updateStarter(initialStarter.id, {
+              name: values.name,
+              instructions: values.instructions,
+              schedule: rrule.toString(),
+              lastFed: new Date(values.start).toString(),
+            });
+            Log.event("starter updated", { id: initialStarter.id });
+            if (router.canGoBack()) router.back();
+            else router.replace(`/starter/${initialStarter.id}/view`);
+          } else {
+            const { id } = await addStarter({
+              name: values.name,
+              instructions: values.instructions,
+              schedule: rrule.toString(),
+              lastFed: new Date(values.start).toString(),
+            });
+            Log.event("starter added", { id });
+            router.replace(`/starter/${id}/view`);
+          }
         }}
       >
         <YStack space p="$4">
@@ -116,7 +130,9 @@ export default function StarterAdd() {
             >
               Cancel
             </Button>
-            <FormSubmitButton>Add</FormSubmitButton>
+            <FormSubmitButton>
+              {initialStarter ? "Update" : "Add"}
+            </FormSubmitButton>
           </XStack>
         </YStack>
       </Formik>

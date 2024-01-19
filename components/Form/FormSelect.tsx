@@ -11,10 +11,15 @@ export function FormSelect({
   name: string;
   values: string[];
 }) {
-  const { handleChange, handleBlur } = useFormikContext();
+  const { handleChange, values: formValues } =
+    useFormikContext<Record<string, string>>();
 
   return (
-    <Select disablePreventBodyScroll onValueChange={handleChange(name)}>
+    <Select
+      disablePreventBodyScroll
+      onValueChange={handleChange(name)}
+      defaultValue={formValues[name]}
+    >
       <Select.Trigger iconAfter={ChevronDown} flexGrow={1} flexShrink={1}>
         <Select.Value />
       </Select.Trigger>

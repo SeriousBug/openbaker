@@ -1,10 +1,10 @@
-import { router, useLocalSearchParams } from "expo-router";
+import { Link, router, useLocalSearchParams } from "expo-router";
 import {
   useDeleteStarter,
   useFeedStarter,
   useStarter,
 } from "../../../lib/data/starter";
-import { Text, Heading, YStack, View } from "tamagui";
+import { Text, Heading, YStack, View, Button } from "tamagui";
 import { useCallback, useMemo, useState } from "react";
 import { Loading } from "../../../components/Loading";
 import { getFormattedNextFeeding } from "../../../lib/time";
@@ -66,6 +66,9 @@ export default function StarterView() {
           acceptLabel="Fed!"
           cancelLabel="Not yet"
         />
+        <Link href={`/starter/${id}/edit`} asChild>
+          <Button>Edit</Button>
+        </Link>
         <ConfirmDialogButton
           disabled={inProgress}
           maxWidth="$12"
