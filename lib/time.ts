@@ -1,5 +1,5 @@
 import { RRule } from "rrule";
-import { Starter } from "./data/starter";
+import { Starter } from "./data/starterSchema";
 
 export function getNextFeeding({ schedule }: Pick<Starter, "schedule">) {
   if (!schedule) return undefined;

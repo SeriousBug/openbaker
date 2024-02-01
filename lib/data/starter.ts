@@ -1,7 +1,6 @@
 import useSWR, { useSWRConfig } from "swr";
 import { DB, isResultSetError, sql } from "../db/db";
 import { useCallback } from "react";
-import { z } from "zod";
 import { keys } from "./keys";
 import { rescheduleAllNotifications } from "../notification";
 import { ulid } from "../ulid";

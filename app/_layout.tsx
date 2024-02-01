@@ -16,6 +16,7 @@ import { rescheduleAllNotifications } from "../lib/notification";
 import { migrateUp } from "../lib/db/migration";
 import "react-native-gesture-handler";
 import { Log } from "../lib/log";
+import { registerBackgroundUpdate } from "../lib/background";
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -68,6 +69,7 @@ export default function RootLayout() {
     if (notificationsSetUp.current) return;
     notificationsSetUp.current = true;
     rescheduleAllNotifications();
+    registerBackgroundUpdate();
   }, []);
 
   if (!loaded || !initialized || !migrated) {
