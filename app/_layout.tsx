@@ -38,6 +38,7 @@ Notifications.setNotificationHandler({
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
+  const [migrated, setMigrated] = useState(false);
   const [loaded, error] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
     ...FontAwesome.font,
@@ -56,6 +57,7 @@ export default function RootLayout() {
 
     setInitialized(true);
     migrateUp().finally(() => {
+      setMigrated(true);
       Log.event("loading done");
       SplashScreen.hideAsync();
     });
@@ -68,7 +70,7 @@ export default function RootLayout() {
     rescheduleAllNotifications();
   }, []);
 
-  if (!loaded || !initialized) {
+  if (!loaded || !initialized || !migrated) {
     return null;
   }
 
